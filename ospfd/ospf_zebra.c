@@ -345,6 +345,9 @@ ospf_zebra_add (struct prefix_ipv4 *p, struct ospf_route *or)
       SET_FLAG (message, ZAPI_MESSAGE_NEXTHOP);
       SET_FLAG (message, ZAPI_MESSAGE_METRIC);
 
+      if (or->mt_id != OSPF_NO_MT)
+        SET_FLAG (message, ZAPI_MESSAGE_MT_ID);
+
       /* Distance value. */
       distance = ospf_distance_apply (p, or);
       if (distance)
@@ -396,10 +399,11 @@ ospf_zebra_add (struct prefix_ipv4 *p, struct ospf_route *or)
           if (IS_DEBUG_OSPF (zebra, ZEBRA_REDISTRIBUTE))
             {
 	      char buf[2][INET_ADDRSTRLEN];
-	      zlog_debug("Zebra: Route add %s/%d nexthop %s",
+	      zlog_debug("Zebra: Route add %s/%d mt-id %d nexthop %s",
 			 inet_ntop(AF_INET, &p->prefix,
 				   buf[0], sizeof(buf[0])),
 			 p->prefixlen,
+                         or->mt_id,
 			 inet_ntop(AF_INET, &path->nexthop,
 				   buf[1], sizeof(buf[1])));
             }
@@ -416,6 +420,10 @@ ospf_zebra_add (struct prefix_ipv4 *p, struct ospf_route *or)
           else
             stream_putl (s, or->cost);
         }
+      if (CHECK_FLAG (message, ZAPI_MESSAGE_MT_ID))
+        stream_putc (s, or->mt_id);
+      else
+        stream_putc (s, 0);
 
       stream_putw_at (s, 0, stream_get_endp (s));
 
@@ -443,6 +451,9 @@ ospf_zebra_delete (struct prefix_ipv4 *p, struct ospf_route *or)
       /* Make packet. */
       s = zclient->obuf;
       stream_reset (s);
+
+      if (or->mt_id != OSPF_NO_MT)
+          SET_FLAG (message, ZAPI_MESSAGE_MT_ID);
 
       /* Put command, type, flags, message. */
       zclient_create_header (s, ZEBRA_IPV4_ROUTE_DELETE, VRF_DEFAULT);
@@ -483,10 +494,11 @@ ospf_zebra_delete (struct prefix_ipv4 *p, struct ospf_route *or)
 	  if (IS_DEBUG_OSPF (zebra, ZEBRA_REDISTRIBUTE))
 	    {
 	      char buf[2][INET_ADDRSTRLEN];
-	      zlog_debug("Zebra: Route delete %s/%d nexthop %s",
+	      zlog_debug("Zebra: Route delete %s/%d mt-id %d nexthop %s",
 			 inet_ntop(AF_INET, &p->prefix,
 				   buf[0], sizeof(buf[0])),
 			 p->prefixlen,
+			 or->mt_id,
 			 inet_ntop(AF_INET, &path->nexthop,
 				   buf[1], sizeof(buf[1])));
 	    }
@@ -503,6 +515,11 @@ ospf_zebra_delete (struct prefix_ipv4 *p, struct ospf_route *or)
 	  else
 	    stream_putl (s, or->cost);
 	}
+
+     if (CHECK_FLAG (message, ZAPI_MESSAGE_MT_ID))
+       stream_putc (s, or->mt_id);
+     else
+       stream_putc (s, 0);
 
       stream_putw_at (s, 0, stream_get_endp (s));
 

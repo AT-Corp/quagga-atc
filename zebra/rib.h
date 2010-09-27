@@ -29,6 +29,7 @@
 #include "queue.h"
 
 #define DISTANCE_INFINITY  255
+#define MAX_VRF_TABLES     128
 
 /* Routing information base. */
 
@@ -529,6 +530,8 @@ static_add_ipv4_safi (safi_t safi, struct prefix *p, struct in_addr *gate,
 extern int
 static_delete_ipv4_safi (safi_t safi, struct prefix *p, struct in_addr *gate,
 			 const char *ifname, u_char distance, vrf_id_t vrf_id);
+
+extern int map_rib_table_to_vrf (int);
 
 #ifdef HAVE_IPV6
 extern int

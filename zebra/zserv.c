@@ -903,8 +903,25 @@ zread_ipv4_add (struct zserv *client, u_short length, vrf_id_t vrf_id)
   if (CHECK_FLAG (message, ZAPI_MESSAGE_METRIC))
     rib->metric = stream_getl (s);
     
-  /* Table */
-  rib->table=zebrad.rtm_table_default;
+
+  /* Multi-topology ID */
+  if (CHECK_FLAG (message, ZAPI_MESSAGE_MT_ID))
+    {
+      char buf[2][INET_ADDRSTRLEN];
+      rib->table = ZEBRA_MT_ROUTE_BASE_DEFAULT + stream_getc (s);
+      zlog_info ("zread_ipv4_add: prefix %s, table %d", 
+                 inet_ntop(AF_INET, &p.prefix, buf[0], sizeof(buf[0])),
+                 rib->table);
+    }
+  else
+    {
+      /* Table */
+      char buf[2][INET_ADDRSTRLEN];
+      rib->table = zebrad.rtm_table_default;
+      zlog_info ("zread_ipv4_add: prefix %s, table %d", 
+                 inet_ntop(AF_INET, &p.prefix, buf[0], sizeof(buf[0])),
+                 rib->table);
+    }
   rib_add_ipv4_multipath (&p, rib, safi);
   return 0;
 }
@@ -922,6 +939,7 @@ zread_ipv4_delete (struct zserv *client, u_short length, vrf_id_t vrf_id)
   u_char nexthop_num;
   u_char nexthop_type;
   u_char ifname_len;
+  u_int32_t vrf_id;
   
   s = client->ibuf;
   ifindex = 0;
@@ -986,8 +1004,17 @@ zread_ipv4_delete (struct zserv *client, u_short length, vrf_id_t vrf_id)
   else
     api.metric = 0;
     
-  rib_delete_ipv4 (api.type, api.flags, &p, nexthop_p, ifindex,
-                   vrf_id, api.safi);
+  /* XXX mt id need to be mapped to a table rather  than a vrf */
+  if (CHECK_FLAG (api.message, ZAPI_MESSAGE_MT_ID))
+    {
+      api.mt_id = stream_getc (s);
+      vrf_id = ZEBRA_MT_ROUTE_BASE_DEFAULT + api.mt_id;
+    }
+  else
+    api.mt_id = vrf_id = client->rtm_table;
+
+  rib_delete_ipv4 (api.type, api.flags, &p, &nexthop, ifindex,
+		   vrf_id, api.safi);
   return 0;
 }
 

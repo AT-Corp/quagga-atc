@@ -191,6 +191,9 @@ connected_up_ipv4 (struct interface *ifp, struct connected *ifc)
   if (prefix_ipv4_any (&p))
     return;
 
+  /* XXX until vrf and table is sorted out, we add connected routes to
+     table 0 */
+ 
   rib_add_ipv4 (ZEBRA_ROUTE_CONNECT, 0, &p, NULL, NULL, ifp->ifindex,
        ifp->vrf_id, RT_TABLE_MAIN, ifp->metric, 0, SAFI_UNICAST);
 

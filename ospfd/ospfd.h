@@ -58,8 +58,15 @@
    been given or not in VLink command handlers */
 #define OSPF_AUTH_CMD_NOTSEEN              -2
 
+/* RFC 4915 (Multi-Topology Routing) constants */
+#define OSPF_MIN_MT_ID                    0
+#define OSPF_MAX_MT_ID                  127
+#define OSPF_MAX_NUM_MT_IDS             128
+#define OSPF_UINT32_SIZE_MT_BIT_VECTOR  (OSPF_MAX_NUM_MT_IDS / 32)
+#define OSPF_NO_MT                      255 /* Invalid value */
+
 /* OSPF options. */
-#define OSPF_OPTION_T                    0x01  /* TOS. */
+#define OSPF_OPTION_MT                   0x01  /* RFC 4915 redefines T-bit */
 #define OSPF_OPTION_E                    0x02
 #define OSPF_OPTION_MC                   0x04
 #define OSPF_OPTION_NP                   0x08
@@ -179,11 +186,11 @@ struct ospf
 #endif /* HAVE_OPAQUE_LSA */
 
   /* Routing tables. */
-  struct route_table *old_table;        /* Old routing table. */
-  struct route_table *new_table;        /* Current routing table. */
+  struct route_table *old_table[OSPF_MAX_NUM_MT_IDS]; /* Old routing table. */
+  struct route_table *new_table[OSPF_MAX_NUM_MT_IDS]; /* Current routing table*/
 
-  struct route_table *old_rtrs;         /* Old ABR/ASBR RT. */
-  struct route_table *new_rtrs;         /* New ABR/ASBR RT. */
+  struct route_table *old_rtrs[OSPF_MAX_NUM_MT_IDS];  /* Old ABR/ASBR RT. */
+  struct route_table *new_rtrs[OSPF_MAX_NUM_MT_IDS];  /* New ABR/ASBR RT. */
 
   struct route_table *new_external_route;   /* New External Route. */
   struct route_table *old_external_route;   /* Old External Route. */
@@ -314,6 +321,9 @@ struct ospf_area
   u_int32_t default_cost;               /* StubDefaultCost. */
   int auth_type;                        /* Authentication type. */
   
+  int default_exclusion;                /* RFC4915 DefaultExclusionCapability */
+#define OSPF_DEFAULT_EXCLUSION_DISABLE 0
+#define OSPF_DEFAULT_EXCLUSION_ENABLE  1
 
   u_char NSSATranslatorRole;          /* NSSA configured role */
 #define OSPF_NSSA_ROLE_NEVER     0
@@ -380,7 +390,7 @@ struct ospf_area
 #define PREFIX_NAME_OUT(A)  (A)->plist_out.name
 
   /* Shortest Path Tree. */
-  struct vertex *spf;
+  struct vertex *spf[OSPF_MAX_NUM_MT_IDS];
 
   /* Threads. */
   struct thread *t_stub_router;    /* Stub-router timer */
@@ -518,6 +528,11 @@ extern int ospf_area_stub_set (struct ospf *, struct in_addr);
 extern int ospf_area_stub_unset (struct ospf *, struct in_addr);
 extern int ospf_area_no_summary_set (struct ospf *, struct in_addr);
 extern int ospf_area_no_summary_unset (struct ospf *, struct in_addr);
+
+extern int ospf_area_default_exclusion_set (struct ospf *, struct ospf_area *);
+extern int ospf_area_default_exclusion_unset (struct ospf *, 
+                                              struct ospf_area *);
+
 extern int ospf_area_nssa_set (struct ospf *, struct in_addr);
 extern int ospf_area_nssa_unset (struct ospf *, struct in_addr);
 extern int ospf_area_nssa_translator_role_set (struct ospf *, struct in_addr,
