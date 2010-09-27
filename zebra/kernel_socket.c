@@ -955,16 +955,18 @@ rtm_read (struct rt_msghdr *rtm)
        */
       if (rtm->rtm_type == RTM_CHANGE)
         rib_delete_ipv4 (ZEBRA_ROUTE_KERNEL, zebra_flags, &p,
-                         NULL, 0, 0, SAFI_UNICAST);
+                         NULL, 0, rtm->rtm_table, SAFI_UNICAST);
       
       if (rtm->rtm_type == RTM_GET 
           || rtm->rtm_type == RTM_ADD
           || rtm->rtm_type == RTM_CHANGE)
-	rib_add_ipv4 (ZEBRA_ROUTE_KERNEL, zebra_flags, 
-		      &p, &gate.sin.sin_addr, NULL, 0, 0, 0, 0, SAFI_UNICAST);
+	rib_add_ipv4 (ZEBRA_ROUTE_KERNEL, zebra_flags, &p,
+		      &gate.sin.sin_addr, NULL, 0, 
+		      rtm->rtm_table, 0, 0, SAFI_UNICAST);
       else
-	rib_delete_ipv4 (ZEBRA_ROUTE_KERNEL, zebra_flags, 
-		      &p, &gate.sin.sin_addr, 0, 0, SAFI_UNICAST);
+	rib_delete_ipv4 (ZEBRA_ROUTE_KERNEL, zebra_flags, &p,
+			 &gate.sin.sin_addr, 0,
+			 rtm->rtm_table, SAFI_UNICAST);
     }
 #ifdef HAVE_IPV6
   if (dest.sa.sa_family == AF_INET6)
@@ -997,16 +999,18 @@ rtm_read (struct rt_msghdr *rtm)
        */
       if (rtm->rtm_type == RTM_CHANGE)
         rib_delete_ipv6 (ZEBRA_ROUTE_KERNEL, zebra_flags, &p,
-                         NULL, 0, 0, SAFI_UNICAST);
+                         NULL, 0, rtm->rtm_table, SAFI_UNICAST);
       
       if (rtm->rtm_type == RTM_GET 
           || rtm->rtm_type == RTM_ADD
           || rtm->rtm_type == RTM_CHANGE)
-	rib_add_ipv6 (ZEBRA_ROUTE_KERNEL, zebra_flags,
-		      &p, &gate.sin6.sin6_addr, ifindex, 0, 0, 0, SAFI_UNICAST);
+	rib_add_ipv6 (ZEBRA_ROUTE_KERNEL, zebra_flags, &p,
+		      &gate.sin6.sin6_addr, ifindex, 
+		      rtm->rtm_table, 0, 0, SAFI_UNICAST);
       else
-	rib_delete_ipv6 (ZEBRA_ROUTE_KERNEL, zebra_flags,
-			 &p, &gate.sin6.sin6_addr, ifindex, 0, SAFI_UNICAST);
+	rib_delete_ipv6 (ZEBRA_ROUTE_KERNEL, zebra_flags, &p,
+			 &gate.sin6.sin6_addr, ifindex, 
+			 rtm->rtm_table, SAFI_UNICAST);
     }
 #endif /* HAVE_IPV6 */
 }
