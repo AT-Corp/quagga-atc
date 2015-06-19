@@ -319,7 +319,7 @@ main (int argc, char **argv, char **envp)
   master = thread_master_create ();
 
   /* random seed from time */
-  srand (time (NULL));
+  srandom (time (NULL));
 
   /*
    *  initializations
