@@ -343,7 +343,7 @@ static int
 ospf_lsa_has_link (struct ospf_area *area, struct lsa_header *w, 
                    struct lsa_header *v, u_int8_t mt_id)
 {
-  unsigned int i, length;
+  int i, length;
   struct router_lsa *rl;
   struct network_lsa *nl;
 
