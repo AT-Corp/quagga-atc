@@ -93,7 +93,7 @@ ospf_area_range_delete (struct ospf_area *area, struct route_node *rn)
   struct ospf_area_range *range = rn->info;
 
   if (range->specifics != 0)
-    ospf_delete_discard_route (area->ospf->new_table,
+    ospf_delete_discard_route (area->ospf->new_table[0],
 			       (struct prefix_ipv4 *) &rn->p);
 
   ospf_area_range_free (range);
@@ -1712,7 +1712,7 @@ ospf_abr_manage_discard_routes (struct ospf *ospf)
 	      ospf_add_discard_route (ospf->new_table[0], area,
 				      (struct prefix_ipv4 *) &rn->p);
 	    else
-	      ospf_delete_discard_route (ospf->new_table,
+	      ospf_delete_discard_route (ospf->new_table[0],
 					 (struct prefix_ipv4 *) &rn->p);
 	  }
 }

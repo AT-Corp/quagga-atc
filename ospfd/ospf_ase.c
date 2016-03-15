@@ -350,7 +350,7 @@ ospf_ase_calculate_route (struct ospf *ospf, struct ospf_lsa * lsa)
   asbr.prefixlen = IPV4_MAX_BITLEN;
   apply_mask_ipv4 (&asbr);
   
-  asbr_route = ospf_find_asbr_route (ospf, ospf->new_rtrs, &asbr);
+  asbr_route = ospf_find_asbr_route (ospf, ospf->new_rtrs[0], &asbr);
   if (asbr_route == NULL)
     {
       if (IS_DEBUG_OSPF (lsa, LSA))
