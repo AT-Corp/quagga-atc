@@ -1369,9 +1369,9 @@ ospf_spf_calculate_timer (struct thread *thread)
         {
           if (IS_DEBUG_OSPF_EVENT)
             zlog_debug ("ospf_spf_calculate mt-id %d: "
-                        "Skip area %s's calculation -- backbone "
+                        "Skip area calculation -- backbone "
                         "router_lsa_self contains no link with mt-id %d",
-                        mt_id, inet_ntoa (area->area_id), mt_id);
+                        mt_id, mt_id);
           continue;
         }
       /* Allocate new table tree. */
