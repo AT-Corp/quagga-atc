@@ -259,8 +259,8 @@ ospf_if_new (struct ospf *ospf, struct interface *ifp, struct prefix *p)
   /* Set default values. */
   ospf_if_reset_variables (oi);
 
-  /* Add pseudo neighbor. */
-  oi->nbr_self = ospf_nbr_new (oi);
+  /* Set pseudo neighbor to NULL */
+  oi->nbr_self = NULL;
 
   oi->ls_upd_queue = route_table_init ();
   oi->t_ls_upd_event = NULL;
@@ -322,9 +322,7 @@ ospf_if_cleanup (struct ospf_interface *oi)
   ospf_ls_upd_queue_empty (oi);
   
   /* Reset pseudo neighbor. */
-  ospf_nbr_delete (oi->nbr_self);
-  oi->nbr_self = ospf_nbr_new (oi);
-  ospf_nbr_add_self (oi);
+  ospf_nbr_self_reset (oi);
 }
 
 void
@@ -339,7 +337,8 @@ ospf_if_free (struct ospf_interface *oi)
 #endif /* HAVE_OPAQUE_LSA */
 
   /* Free Pseudo Neighbour */
-  ospf_nbr_delete (oi->nbr_self);
+  if (oi->nbr_self)
+     ospf_nbr_delete (oi->nbr_self);
   
   route_table_finish (oi->nbrs);
   route_table_finish (oi->ls_upd_queue);
@@ -944,8 +943,7 @@ ospf_vl_new (struct ospf *ospf, struct ospf_vl_data *vl_data)
   if (IS_DEBUG_OSPF_EVENT)
     zlog_debug ("ospf_vl_new(): set associated area to the backbone");
 
-  ospf_nbr_add_self (voi);
-  ospf_area_add_if (voi->area, voi);
+  ospf_nbr_self_reset (voi);
 
   ospf_if_stream_set (voi);
 
