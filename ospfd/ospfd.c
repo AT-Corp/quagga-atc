@@ -916,6 +916,9 @@ ospf_network_run_interface (struct prefix *p, struct ospf_area *area,
             /* If network type is specified previously,
                skip network type setting. */
             oi->type = IF_DEF_PARAMS (ifp)->type;
+
+            /* Add pseudo neighbor. */
+            ospf_nbr_self_reset (oi);
             
 	    if (area->default_exclusion == OSPF_DEFAULT_EXCLUSION_ENABLE)
 	      SET_FLAG (oi->nbr_self->options, OSPF_OPTION_MT);
@@ -924,9 +927,6 @@ ospf_network_run_interface (struct prefix *p, struct ospf_area *area,
 
             ospf_area_add_if (oi->area, oi);
 
-            /* Add pseudo neighbor. */
-            ospf_nbr_self_reset (oi);
-            
             /* if router_id is not configured, dont bring up
              * interfaces.
              * ospf_router_id_update() will call ospf_if_update
