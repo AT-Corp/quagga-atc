@@ -368,5 +368,7 @@ extern struct ospf_lsa *ospf_translated_nssa_originate (struct ospf *, struct os
 
 extern int ospf_lsa_contains_mtid (struct ospf_area *, struct ospf_lsa *, u_int8_t);
 extern u_int16_t ospf_lsa_link_mtid_metric (struct ospf_area *, struct router_lsa_link *, u_int8_t);
-
+int
+ospf_lsa_link_mtid_exists (struct ospf_area *area, struct router_lsa_link *l, 
+                           u_int8_t mt_id);
 #endif /* _ZEBRA_OSPF_LSA_H */

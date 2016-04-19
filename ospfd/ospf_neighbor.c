@@ -180,6 +180,34 @@ ospf_nbr_delete (struct ospf_neighbor *nbr)
 
       route_unlock_node (rn);
     }
+  else
+    {
+      /*
+       * This neighbor was not found, but before we move on and
+       * free the neighbor structre, make sure that it was not
+       * indexed incorrectly and ended up in the "worng" place
+       */
+
+      /* reverse the lookup rules */
+      if (oi->type == OSPF_IFTYPE_VIRTUALLINK ||
+	  oi->type == OSPF_IFTYPE_POINTOPOINT)
+	p.u.prefix4 = nbr->src;
+      else
+	p.u.prefix4 = nbr->router_id;
+
+      rn = route_node_lookup (oi->nbrs, &p);
+      if (rn){
+	/* We found the neighbor!  
+	 * now make sure it is not the exact same neighbor
+	 * structure that we are about to free
+	 */
+	if (nbr == rn->info){
+	  rn->info = NULL;
+	  route_unlock_node (rn);
+	}
+      }
+      route_unlock_node (rn);
+    }
 
   /* Free ospf_neighbor structure. */
   ospf_nbr_free (nbr);
