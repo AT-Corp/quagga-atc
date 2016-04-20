@@ -197,14 +197,17 @@ ospf_nbr_delete (struct ospf_neighbor *nbr)
 
       rn = route_node_lookup (oi->nbrs, &p);
       if (rn){
-	/* We found the neighbor!  
+	/* We found the neighbor!
 	 * now make sure it is not the exact same neighbor
 	 * structure that we are about to free
 	 */
-	if (nbr == rn->info)
+	if (nbr == rn->info){
+	  /* Same neighbor, drop the reference to it */
 	  rn->info = NULL;
+	  route_unlock_node (rn);
+	}
+	route_unlock_node (rn);
       }
-      route_unlock_node (rn);
     }
 
   /* Free ospf_neighbor structure. */
